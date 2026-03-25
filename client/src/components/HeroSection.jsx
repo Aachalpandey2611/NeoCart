@@ -29,13 +29,13 @@ const HeroSection = () => {
 
           <motion.h1
             variants={staggerItem}
-            className="text-6xl md:text-8xl font-black mb-6 tracking-tight leading-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-purple-200 to-gray-400 drop-shadow-2xl"
+            className="text-6xl md:text-8xl font-black mb-6 tracking-tight leading-tight text-white drop-shadow-[0_10px_30px_rgba(0,0,0,0.8)]"
           >
             Experience The <br />
-            <span className="gradient-text">Future</span> Today.
+            <span className="gradient-text drop-shadow-[0_0_20px_rgba(124,58,237,0.5)]">Future</span> Today.
           </motion.h1>
 
-          <motion.p variants={staggerItem} className="text-lg md:text-2xl text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed">
+          <motion.p variants={staggerItem} className="text-lg md:text-2xl text-gray-200 mb-10 max-w-2xl mx-auto leading-relaxed drop-shadow-md">
             Discover cutting-edge technology, wearables, and smart devices curated for the modern visionary.
             Welcome to NeoCart.
           </motion.p>
