@@ -1,10 +1,13 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { slideUp, fadeIn, staggerContainer, staggerItem } from '../animations/variants';
+import { FiArrowRight, FiZap } from 'react-icons/fi';
+import { staggerContainer, staggerItem, fadeIn } from '../animations/variants';
+import Hero3D from './Hero3D';
 
 const HeroSection = () => {
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20 flex-col">
+      <Hero3D />
       {/* Background gradients */}
       <div className="absolute inset-0 z-0 flex items-center justify-center opacity-40">
         <div className="absolute w-[600px] h-[600px] bg-purple-600 rounded-full blur-[120px] mix-blend-screen opacity-50 animate-pulse" />
