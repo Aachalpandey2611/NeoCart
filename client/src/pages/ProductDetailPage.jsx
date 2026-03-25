@@ -6,7 +6,7 @@ import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useToast } from '../context/ToastContext';
 import Loader from '../components/Loader';
-import { getProductById } from '../services/productService';
+import { getProductById, createProductReview } from '../services/productService';
 import { formatCurrency, calcDiscount, renderStars } from '../utils/helpers';
 import { pageTransition, slideUp, fadeIn } from '../animations/variants';
 
@@ -16,6 +16,9 @@ const ProductDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [qty, setQty] = useState(1);
   const [activeTab, setActiveTab] = useState('description');
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const { addToCart } = useCart();
   const { toggleWishlist, isWishlisted } = useWishlist();
@@ -47,6 +50,23 @@ const ProductDetailPage = () => {
   const handleAddToCart = () => {
     addToCart(product, qty);
     addToast(`${product.name} (x${qty}) added to cart!`, 'success');
+  };
+
+  const submitReviewHandler = async () => {
+    if (!comment) return addToast('Please enter a comment', 'error');
+    setSubmitting(true);
+    try {
+      await createProductReview(id, { rating, comment });
+      addToast('Review submitted!', 'success');
+      setComment('');
+      // Refresh product
+      const updatedProduct = await getProductById(id);
+      setProduct(updatedProduct);
+    } catch (error) {
+      addToast(error.response?.data?.message || 'Failed to submit review', 'error');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -187,6 +207,39 @@ const ProductDetailPage = () => {
             )}
             {activeTab === 'reviews' && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                {/* Review Form */}
+                <div className="glass-dark p-6 rounded-2xl mb-12 border border-white/5">
+                  <h4 className="text-xl font-bold mb-4 text-white">Share Your Thoughts</h4>
+                  <div className="flex flex-col gap-4">
+                    <div className="flex gap-2">
+                       {[1, 2, 3, 4, 5].map((s) => (
+                         <button
+                           key={s}
+                           onClick={() => setRating(s)}
+                           className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
+                             rating >= s ? 'bg-yellow-500/20 text-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.2)]' : 'bg-white/5 text-gray-500'
+                           }`}
+                         >
+                           <FiStar className={rating >= s ? 'fill-current' : ''} />
+                         </button>
+                       ))}
+                    </div>
+                    <textarea
+                      value={comment}
+                      onChange={(e) => setComment(e.target.value)}
+                      placeholder="Your review helps others discover the future..."
+                      className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-purple-500/50 min-h-[100px]"
+                    />
+                    <button
+                      onClick={submitReviewHandler}
+                      disabled={submitting}
+                      className="btn-primary self-start px-8"
+                    >
+                      {submitting ? 'Submitting...' : 'Post Review'}
+                    </button>
+                  </div>
+                </div>
+
                 {product.reviews && product.reviews.length > 0 ? (
                   <div className="space-y-6">
                     {product.reviews.map((r, i) => (
@@ -210,7 +263,6 @@ const ProductDetailPage = () => {
                 ) : (
                   <div className="text-center py-12 text-gray-400">
                     <p className="mb-4 text-lg">No reviews yet.</p>
-                    <button className="btn-secondary">Be the first to review</button>
                   </div>
                 )}
               </motion.div>

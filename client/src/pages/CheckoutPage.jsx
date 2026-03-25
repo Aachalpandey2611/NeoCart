@@ -8,6 +8,8 @@ import { createOrder } from '../services/orderService';
 import { useToast } from '../context/ToastContext';
 import { formatCurrency } from '../utils/helpers';
 import { pageTransition, fadeIn, slideUp } from '../animations/variants';
+import CreditCard from '../components/CreditCard';
+import OrderSuccessModal from '../components/OrderSuccessModal';
 
 const steps = [
   { id: 1, name: 'Shipping', icon: <FiMapPin /> },
@@ -23,12 +25,15 @@ const CheckoutPage = () => {
 
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [orderDetails, setOrderDetails] = useState(null);
   const [shippingAddress, setShippingAddress] = useState({
     fullName: user?.name || '', address: '', city: '', postalCode: '', country: '',
   });
   const [paymentMethod, setPaymentMethod] = useState('Credit Card');
+  const [cardDetails, setCardDetails] = useState({ number: '', name: user?.name || '', expiry: '', cvc: '' });
 
-  if (cartItems.length === 0) {
+  if (cartItems.length === 0 && !showSuccess) {
     return (
       <div className="page-bg min-h-screen pt-32 text-center text-white">
         <h2 className="text-3xl mb-4">Your cart is empty</h2>
@@ -63,10 +68,10 @@ const CheckoutPage = () => {
         shippingPrice,
         totalPrice,
       };
-      await createOrder(orderData);
-      addToast('Order placed successfully!', 'success');
+      const data = await createOrder(orderData);
+      setOrderDetails(data);
+      setShowSuccess(true);
       clearCart();
-      navigate('/dashboard');
     } catch (err) {
       addToast(err.message || 'Error placing order', 'error');
     } finally {
@@ -154,19 +159,41 @@ const CheckoutPage = () => {
               {currentStep === 2 && (
                 <motion.div key="step2" variants={fadeIn} initial="hidden" animate="visible" exit="hidden" className="glass-dark rounded-3xl p-8 border border-white/10 shadow-2xl">
                   <h3 className="text-2xl font-bold mb-6 text-white border-b border-white/10 pb-4">Payment Method</h3>
-                  <div className="space-y-4">
-                    {['Credit Card', 'PayPal', 'Crypto (NeoCoin)'].map((method) => (
-                      <label key={method} className={`flex items-center gap-4 p-5 rounded-2xl cursor-pointer transition-all border ${paymentMethod === method ? 'border-purple-500 bg-purple-500/10 shadow-[0_0_20px_rgba(124,58,237,0.2)]' : 'border-white/10 glass bg-black/40 hover:bg-white/5'}`}>
-                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${paymentMethod === method ? 'border-purple-500' : 'border-gray-500'}`}>
-                          {paymentMethod === method && <div className="w-3 h-3 rounded-full bg-purple-500" />}
+                  <div className="flex flex-col gap-8">
+                     <div className="flex justify-center flex-col items-center gap-6">
+                        <CreditCard 
+                           name={cardDetails.name} 
+                           number={cardDetails.number} 
+                           expiry={cardDetails.expiry} 
+                           cvc={cardDetails.cvc} 
+                        />
+                        <div className="flex bg-black/40 p-1 rounded-xl w-full border border-white/5">
+                           {['Credit Card', 'PayPal', 'Crypto'].map((m) => (
+                              <button key={m} onClick={() => setPaymentMethod(m)} className={`flex-1 py-2 text-xs font-bold uppercase rounded-lg transition-all ${paymentMethod === m ? 'bg-purple-600 text-white shadow-lg shadow-purple-900/40' : 'text-gray-500 hover:text-white'}`}>{m}</button>
+                           ))}
                         </div>
-                        <span className={`text-lg font-medium ${paymentMethod === method ? 'text-white font-bold' : 'text-gray-300'}`}>{method}</span>
-                      </label>
-                    ))}
+                     </div>
+
+                     {paymentMethod === 'Credit Card' && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                           <div className="sm:col-span-2">
+                              <label className="text-[10px] uppercase font-bold text-gray-500 mb-1 ml-1 block">Card Number</label>
+                              <input placeholder="0000 0000 0000 0000" type="text" value={cardDetails.number} onChange={(e) => setCardDetails({...cardDetails, number: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-purple-500/50" />
+                           </div>
+                           <div>
+                              <label className="text-[10px] uppercase font-bold text-gray-500 mb-1 ml-1 block">Expiration</label>
+                              <input placeholder="MM/YY" type="text" value={cardDetails.expiry} onChange={(e) => setCardDetails({...cardDetails, expiry: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-purple-500/50" />
+                           </div>
+                           <div>
+                              <label className="text-[10px] uppercase font-bold text-gray-500 mb-1 ml-1 block">CVC</label>
+                              <input placeholder="•••" type="text" value={cardDetails.cvc} onChange={(e) => setCardDetails({...cardDetails, cvc: e.target.value})} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white outline-none focus:border-purple-500/50" />
+                           </div>
+                        </div>
+                     )}
                   </div>
-                  <div className="mt-8 flex justify-between">
-                    <button onClick={() => setCurrentStep(1)} className="btn-secondary py-3 px-8">Back</button>
-                    <button onClick={handleNext} className="btn-primary py-3 px-8 flex items-center gap-2">Review Order <FiArrowRight /></button>
+                  <div className="mt-12 flex justify-between gap-4">
+                    <button onClick={() => setCurrentStep(1)} className="btn-secondary py-3 px-8 flex-1 sm:flex-none">Back</button>
+                    <button onClick={handleNext} className="btn-primary py-3 px-8 flex items-center justify-center gap-2 flex-1 sm:flex-none">Review Order <FiArrowRight /></button>
                   </div>
                 </motion.div>
               )}
@@ -245,6 +272,7 @@ const CheckoutPage = () => {
 
         </div>
       </div>
+      <OrderSuccessModal isOpen={showSuccess} orderId={orderDetails?._id} onClose={() => setShowSuccess(false)} />
     </motion.div>
   );
 };

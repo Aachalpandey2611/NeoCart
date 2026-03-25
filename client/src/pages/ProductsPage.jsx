@@ -1,186 +1,221 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FiFilter, FiX, FiSearch } from 'react-icons/fi';
+import { motion } from 'framer-motion';
+import { FiFilter, FiSearch, FiX } from 'react-icons/fi';
+import { getProducts } from '../services/productService';
 import ProductCard from '../components/ProductCard';
 import Loader from '../components/Loader';
-import { getProducts } from '../services/productService';
-import { staggerContainer, staggerItem, pageTransition } from '../animations/variants';
+import { pageTransition, staggerContainer, staggerItem } from '../animations/variants';
 
-const categories = ['All', 'Electronics', 'Wearables', 'Audio', 'Gaming', 'Accessories', 'Smart Home'];
+const CATEGORIES = ['All', 'Smartphones', 'Laptops', 'Wearables', 'Gaming', 'Audio', 'Accessories'];
 
 const ProductsPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [pages, setPages] = useState(1);
-  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [sort, setSort] = useState(searchParams.get('sort') || '-createdAt');
 
-  // Filters State
   const initialCategory = searchParams.get('category') || 'All';
   const initialKeyword = searchParams.get('keyword') || '';
-  
-  const [selectedCat, setSelectedCat] = useState(initialCategory);
-  const [keyword, setKeyword] = useState(initialKeyword);
-  const [searchInput, setSearchInput] = useState(initialKeyword);
-  const [showFilters, setShowFilters] = useState(false);
+  const initialPage = Number(searchParams.get('page')) || 1;
 
-  useEffect(() => {
-    setSelectedCat(searchParams.get('category') || 'All');
-    setKeyword(searchParams.get('keyword') || '');
-    setSearchInput(searchParams.get('keyword') || '');
-  }, [searchParams]);
+  const [category, setCategory] = useState(initialCategory);
+  const [keyword, setKeyword] = useState(initialKeyword);
+  const [page, setPage] = useState(initialPage);
 
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const catQuery = selectedCat !== 'All' ? selectedCat : '';
-        const data = await getProducts({ category: catQuery, keyword, page });
+        const catQuery = category === 'All' ? '' : category;
+        const data = await getProducts({ keyword, page, category: catQuery, sort });
         setProducts(data.products);
-        setPages(data.pages);
-        setTotal(data.total);
+        setTotalPages(data.pages);
       } catch (error) {
-        console.error(error);
+        console.error('Failed to fetch products', error);
       } finally {
         setLoading(false);
       }
     };
     fetchProducts();
-  }, [selectedCat, keyword, page]);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [keyword, page, category, sort]);
 
-  // Reset page when filters change
-  useEffect(() => { setPage(1); }, [selectedCat, keyword]);
+  const handleSortChange = (e) => {
+    setSort(e.target.value);
+    setPage(1);
+    const params = Object.fromEntries([...searchParams]);
+    params.sort = e.target.value;
+    params.page = 1;
+    setSearchParams(params);
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    setPage(1);
+    const params = { page: 1 };
+    if (keyword) params.keyword = keyword;
+    if (category !== 'All') params.category = category;
+    setSearchParams(params);
+  };
+
+  const handleCategoryClick = (cat) => {
+    setCategory(cat);
+    setPage(1);
+    const params = { page: 1 };
+    if (keyword) params.keyword = keyword;
+    if (cat !== 'All') params.category = cat;
+    setSearchParams(params);
+    setIsFilterOpen(false);
+  };
+
+  const clearFilters = () => {
+    setCategory('All');
+    setKeyword('');
+    setPage(1);
+    setSearchParams({});
+    setIsFilterOpen(false);
+  };
 
   return (
     <motion.div variants={pageTransition} initial="initial" animate="animate" exit="exit" className="page-bg min-h-screen pt-24 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+        {/* Header Area */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-4xl font-black mb-2">Explore <span className="gradient-text">Products</span></h1>
-            <p className="text-gray-400 text-sm">Showing {products.length} of {total} results</p>
+            <h1 className="text-4xl font-black mb-2">Our <span className="gradient-text">Future Tech</span></h1>
+            <p className="text-gray-400 font-medium">Explore the most advanced devices in the galaxy.</p>
           </div>
-
-          <div className="flex items-center gap-4">
-            {/* Search Input inline */}
-            <div className="relative glass rounded-xl overflow-hidden hidden md:flex items-center border border-white/10 w-64">
+          
+          <div className="flex items-center gap-3">
+            <form onSubmit={handleSearch} className="relative w-full md:w-64 group">
               <input
                 type="text"
                 placeholder="Search..."
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    setSearchParams({ keyword: searchInput, category: selectedCat === 'All' ? '' : selectedCat });
-                  }
-                }}
-                className="w-full bg-transparent px-4 py-2 text-sm text-white placeholder-gray-500 outline-none"
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                className="w-full bg-black/40 border border-white/10 rounded-full pl-5 pr-12 py-3 text-sm text-white focus:outline-none focus:border-purple-500/50 transition-colors"
               />
-              <button
-                onClick={() => setSearchParams({ keyword: searchInput, category: selectedCat === 'All' ? '' : selectedCat })}
-                className="px-3 text-gray-400 hover:text-white"
-              >
-                <FiSearch />
+              <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-gray-400 group-hover:text-white transition-colors">
+                <FiSearch className="w-4 h-4" />
               </button>
-            </div>
+            </form>
 
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all ${
-                showFilters ? 'bg-purple-600/20 text-purple-400 border border-purple-500/30' : 'glass text-white'
-              }`}
+            <select
+              value={sort}
+              onChange={handleSortChange}
+              className="bg-black/40 border border-white/10 rounded-full px-5 py-3 text-sm text-white focus:outline-none focus:border-purple-500/50 transition-colors cursor-pointer appearance-none hover:bg-white/5"
             >
-              <FiFilter className="w-4 h-4" /> Filters
+              <option value="-createdAt">Newest First</option>
+              <option value="price">Price: Low to High</option>
+              <option value="-price">Price: High to Low</option>
+              <option value="-rating">Highest Rated</option>
+            </select>
+
+            <button 
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
+              className="md:hidden w-12 h-12 rounded-full glass flex items-center justify-center text-white"
+            >
+              <FiFilter className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        {/* Filter Bar (Collapsible) */}
-        <AnimatePresence>
-          {showFilters && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="mb-8 overflow-hidden"
-            >
-              <div className="glass-dark border border-white/10 rounded-2xl p-6 flex flex-wrap gap-3">
-                <span className="w-full text-sm font-semibold text-gray-400 mb-2">Categories:</span>
-                {categories.map((cat) => (
+        <div className="flex flex-col md:flex-row gap-8">
+          
+          {/* Sidebar Filters */}
+          <div className={`w-full md:w-64 glass-dark rounded-3xl p-6 border border-white/10 md:sticky md:top-24 h-max transition-all duration-300 ${isFilterOpen ? 'block' : 'hidden md:block'}`}>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-bold text-white flex items-center gap-2"><FiFilter /> Filters</h3>
+              <button onClick={clearFilters} className="text-xs text-purple-400 hover:text-purple-300 uppercase font-bold tracking-wider">Clear</button>
+            </div>
+            
+            <div className="mb-8">
+              <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-widest mb-4">Categories</h4>
+              <div className="flex flex-col gap-2">
+                {CATEGORIES.map((cat) => (
                   <button
                     key={cat}
-                    onClick={() => {
-                      setSelectedCat(cat);
-                      setSearchParams({ category: cat === 'All' ? '' : cat, keyword });
-                    }}
-                    className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
-                      selectedCat === cat
-                        ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg shadow-purple-900/40 border-none'
-                        : 'glass text-gray-400 hover:text-white border-white/10'
+                    onClick={() => handleCategoryClick(cat)}
+                    className={`text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                      category === cat 
+                        ? 'bg-gradient-to-r from-purple-600/20 to-blue-600/20 text-white border border-purple-500/30 shadow-[0_0_15px_rgba(124,58,237,0.15)]' 
+                        : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
                     }`}
                   >
                     {cat}
                   </button>
                 ))}
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </div>
 
-        {/* Product Grid */}
-        {loading ? (
-          <div className="py-32 flex justify-center"><Loader size="lg" /></div>
-        ) : products.length === 0 ? (
-          <div className="py-32 flex flex-col items-center justify-center text-center">
-            <span className="text-6xl mb-4">🛸</span>
-            <h2 className="text-2xl font-bold text-white mb-2">No products found</h2>
-            <p className="text-gray-400 max-w-md">We couldn't find anything matching your search. Try different keywords or filters.</p>
-            <button
-              onClick={() => {
-                setSearchParams({});
-                setSearchInput('');
-              }}
-              className="mt-6 btn-secondary"
-            >
-              Clear Filters
-            </button>
+            {/* In a real scenario, Price/Brand filters would go here and passed to API */}
+            <div>
+               <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-widest mb-4">Pricing Range</h4>
+               <input type="range" min="0" max="5000" className="w-full accent-purple-500" />
+               <div className="flex justify-between text-xs text-gray-400 mt-2">
+                 <span>$0</span>
+                 <span>$5000+</span>
+               </div>
+            </div>
+            
           </div>
-        ) : (
-          <motion.div
-            variants={staggerContainer}
-            initial="hidden"
-            animate="visible"
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 xl:gap-8"
-          >
-            {products.map((product) => (
-              <motion.div key={product._id} variants={staggerItem}>
-                <ProductCard product={product} />
+
+          {/* Product Grid */}
+          <div className="flex-1">
+            {loading ? (
+              <div className="py-32 flex justify-center"><Loader size="lg" /></div>
+            ) : products.length === 0 ? (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="glass-dark rounded-3xl p-16 text-center border border-white/10">
+                <FiSearch className="w-16 h-16 text-gray-600 mx-auto mb-6" />
+                <h3 className="text-2xl font-bold text-white mb-2">No products found</h3>
+                <p className="text-gray-400 mb-6 max-w-sm mx-auto">We couldn't find anything matching your current filters. Try adjusting your search criteria.</p>
+                <button onClick={clearFilters} className="btn-secondary">Clear all filters</button>
               </motion.div>
-            ))}
-          </motion.div>
-        )}
+            ) : (
+              <>
+                <motion.div 
+                  variants={staggerContainer}
+                  initial="hidden"
+                  animate="visible"
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6"
+                >
+                  {products.map((product) => (
+                    <motion.div key={product._id} variants={staggerItem}>
+                      <ProductCard product={product} />
+                    </motion.div>
+                  ))}
+                </motion.div>
 
-        {/* Pagination */}
-        {!loading && pages > 1 && (
-          <div className="mt-16 flex justify-center gap-2">
-            {[...Array(pages).keys()].map((p) => (
-              <button
-                key={p + 1}
-                onClick={() => setPage(p + 1)}
-                className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm transition-all ${
-                  page === p + 1
-                    ? 'bg-gradient-to-br from-purple-600 to-blue-600 text-white shadow-lg shadow-purple-900/40'
-                    : 'glass text-gray-400 hover:text-white'
-                }`}
-              >
-                {p + 1}
-              </button>
-            ))}
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex justify-center gap-2 mt-12">
+                    {[...Array(totalPages)].map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => {
+                          setPage(i + 1);
+                          setSearchParams({ keyword, category: category !== 'All' ? category : '', page: i + 1 });
+                        }}
+                        className={`w-10 h-10 rounded-xl font-bold transition-all ${
+                          page === i + 1 
+                            ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-[0_0_15px_rgba(124,58,237,0.4)]' 
+                            : 'glass text-gray-400 hover:text-white hover:bg-white/10'
+                        }`}
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
           </div>
-        )}
+
+        </div>
       </div>
     </motion.div>
   );

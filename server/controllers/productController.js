@@ -13,9 +13,11 @@ const getProducts = asyncHandler(async (req, res) => {
   const category = req.query.category ? { category: req.query.category } : {};
   const filter = { ...keyword, ...category };
 
+  const sortOption = req.query.sort ? req.query.sort.split(',').join(' ') : '-createdAt';
+
   const count = await Product.countDocuments(filter);
   const products = await Product.find(filter)
-    .sort({ createdAt: -1 })
+    .sort(sortOption)
     .limit(pageSize)
     .skip(pageSize * (page - 1));
 

@@ -14,3 +14,8 @@ export const getProductById = async (id) => {
   const { data } = await api.get(`/products/${id}`);
   return data;
 };
+
+export const createProductReview = async (productId, review) => {
+  const { data } = await api.post(`/products/${productId}/review`, review);
+  return data;
+};
