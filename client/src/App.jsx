@@ -1,25 +1,33 @@
-import { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
+import { useState } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
 
-import { AuthProvider } from './context/AuthContext';
-import { CartProvider } from './context/CartContext';
-import { WishlistProvider } from './context/WishlistContext';
-import { ToastProvider } from './context/ToastContext';
+import { AuthProvider } from "./context/AuthContext";
+import { CartProvider } from "./context/CartContext";
+import { WishlistProvider } from "./context/WishlistContext";
+import { ToastProvider } from "./context/ToastContext";
 
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
-import CartDrawer from './components/CartDrawer';
-import AnimatedBackground from './components/AnimatedBackground';
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
+import CartDrawer from "./components/CartDrawer";
+import AnimatedBackground from "./components/AnimatedBackground";
+import NeoAssistantWidget from "./components/NeoAssistantWidget";
 
-import LandingPage from './pages/LandingPage';
-import ProductsPage from './pages/ProductsPage';
-import ProductDetailPage from './pages/ProductDetailPage';
-import CartPage from './pages/CartPage';
-import WishlistPage from './pages/WishlistPage';
-import CheckoutPage from './pages/CheckoutPage';
-import AuthPage from './pages/AuthPage';
-import DashboardPage from './pages/DashboardPage';
+import LandingPage from "./pages/LandingPage";
+import ProductsPage from "./pages/ProductsPage";
+import ProductDetailPage from "./pages/ProductDetailPage";
+import CartPage from "./pages/CartPage";
+import WishlistPage from "./pages/WishlistPage";
+import CheckoutPage from "./pages/CheckoutPage";
+import AuthPage from "./pages/AuthPage";
+import DashboardPage from "./pages/DashboardPage";
+import OrderTrackingPage from "./pages/OrderTrackingPage";
+import AdminControlPage from "./pages/AdminControlPage";
 
 const AnimatedRoutes = () => {
   const location = useLocation();
@@ -35,6 +43,8 @@ const AnimatedRoutes = () => {
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/orders/:id" element={<OrderTrackingPage />} />
+        <Route path="/admin" element={<AdminControlPage />} />
       </Routes>
     </AnimatePresence>
   );
@@ -53,10 +63,14 @@ function App() {
                 <AnimatedBackground />
                 <div className="relative z-10 w-full min-h-screen flex flex-col">
                   <Navbar onCartOpen={() => setIsCartOpen(true)} />
-                  <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+                  <CartDrawer
+                    isOpen={isCartOpen}
+                    onClose={() => setIsCartOpen(false)}
+                  />
                   <main className="flex-grow w-full">
                     <AnimatedRoutes />
                   </main>
+                  <NeoAssistantWidget />
                   <Footer />
                 </div>
               </div>

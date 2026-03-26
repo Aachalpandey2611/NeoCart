@@ -1,16 +1,24 @@
-import { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FiShoppingCart, FiHeart, FiUser, FiMenu, FiX, FiSearch, FiLogOut } from 'react-icons/fi';
-import { useAuth } from '../context/AuthContext';
-import { useCart } from '../context/CartContext';
-import { useWishlist } from '../context/WishlistContext';
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  FiShoppingCart,
+  FiHeart,
+  FiUser,
+  FiMenu,
+  FiX,
+  FiSearch,
+  FiLogOut,
+} from "react-icons/fi";
+import { useAuth } from "../context/AuthContext";
+import { useCart } from "../context/CartContext";
+import { useWishlist } from "../context/WishlistContext";
 
 const Navbar = ({ onCartOpen }) => {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const { user, logout } = useAuth();
   const { cartCount } = useCart();
   const { wishlist } = useWishlist();
@@ -19,8 +27,8 @@ const Navbar = ({ onCartOpen }) => {
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   useEffect(() => setMenuOpen(false), [location.pathname]);
@@ -30,15 +38,16 @@ const Navbar = ({ onCartOpen }) => {
     if (searchQuery.trim()) {
       navigate(`/products?keyword=${encodeURIComponent(searchQuery.trim())}`);
       setSearchOpen(false);
-      setSearchQuery('');
+      setSearchQuery("");
     }
   };
 
   const navLinks = [
-    { label: 'Home', to: '/' },
-    { label: 'Products', to: '/products' },
-    { label: 'Wishlist', to: '/wishlist' },
-    { label: 'Dashboard', to: '/dashboard' },
+    { label: "Home", to: "/" },
+    { label: "Products", to: "/products" },
+    { label: "Wishlist", to: "/wishlist" },
+    { label: "Dashboard", to: "/dashboard" },
+    ...(user?.role === "admin" ? [{ label: "Admin", to: "/admin" }] : []),
   ];
 
   return (
@@ -46,9 +55,11 @@ const Navbar = ({ onCartOpen }) => {
       <motion.nav
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        transition={{ duration: 0.6, ease: 'easeOut' }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled ? 'glass-dark shadow-2xl shadow-purple-900/20' : 'bg-transparent'
+          scrolled
+            ? "glass-dark shadow-2xl shadow-purple-900/20"
+            : "bg-transparent"
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -62,7 +73,9 @@ const Navbar = ({ onCartOpen }) => {
               >
                 <span className="text-white font-black text-sm">N</span>
               </motion.div>
-              <span className="text-xl font-black gradient-text hidden sm:block">NeoCart</span>
+              <span className="text-xl font-black gradient-text hidden sm:block">
+                NeoCart
+              </span>
             </Link>
 
             {/* Desktop Nav */}
@@ -72,7 +85,7 @@ const Navbar = ({ onCartOpen }) => {
                   key={link.to}
                   to={link.to}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 relative group
-                    ${location.pathname === link.to ? 'text-purple-400' : 'text-gray-300 hover:text-white'}`}
+                    ${location.pathname === link.to ? "text-purple-400" : "text-gray-300 hover:text-white"}`}
                 >
                   {link.label}
                   {location.pathname === link.to && (
@@ -146,13 +159,29 @@ const Navbar = ({ onCartOpen }) => {
                     <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-xs font-bold">
                       {user.name?.[0]?.toUpperCase()}
                     </div>
-                    <span className="hidden sm:block">{user.name?.split(' ')[0]}</span>
+                    <span className="hidden sm:block">
+                      {user.name?.split(" ")[0]}
+                    </span>
                   </motion.button>
                   <div className="absolute right-0 top-full mt-2 w-48 py-2 glass-dark rounded-xl shadow-2xl border border-white/10 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-all">
-                    <Link to="/dashboard" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-all">
+                    <Link
+                      to="/dashboard"
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-all"
+                    >
                       <FiUser className="w-4 h-4" /> Dashboard
                     </Link>
-                    <button onClick={logout} className="flex items-center gap-2 px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/5 transition-all w-full text-left">
+                    {user?.role === "admin" && (
+                      <Link
+                        to="/admin"
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-cyan-300 hover:text-cyan-200 hover:bg-cyan-500/5 transition-all"
+                      >
+                        <FiUser className="w-4 h-4" /> Admin Control
+                      </Link>
+                    )}
+                    <button
+                      onClick={logout}
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/5 transition-all w-full text-left"
+                    >
                       <FiLogOut className="w-4 h-4" /> Logout
                     </button>
                   </div>
@@ -174,7 +203,11 @@ const Navbar = ({ onCartOpen }) => {
                 onClick={() => setMenuOpen(!menuOpen)}
                 className="md:hidden p-2.5 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all"
               >
-                {menuOpen ? <FiX className="w-5 h-5" /> : <FiMenu className="w-5 h-5" />}
+                {menuOpen ? (
+                  <FiX className="w-5 h-5" />
+                ) : (
+                  <FiMenu className="w-5 h-5" />
+                )}
               </button>
             </div>
           </div>
@@ -185,7 +218,7 @@ const Navbar = ({ onCartOpen }) => {
           {menuOpen && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
+              animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               className="md:hidden glass-dark border-t border-white/10"
             >
@@ -196,8 +229,8 @@ const Navbar = ({ onCartOpen }) => {
                     to={link.to}
                     className={`px-4 py-3 rounded-xl text-sm font-medium transition-all ${
                       location.pathname === link.to
-                        ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20'
-                        : 'text-gray-300 hover:text-white hover:bg-white/5'
+                        ? "bg-purple-500/10 text-purple-400 border border-purple-500/20"
+                        : "text-gray-300 hover:text-white hover:bg-white/5"
                     }`}
                   >
                     {link.label}
@@ -231,7 +264,10 @@ const Navbar = ({ onCartOpen }) => {
               exit={{ opacity: 0, y: -50, scale: 0.95 }}
               className="fixed top-1/4 left-1/2 -translate-x-1/2 z-[70] w-full max-w-2xl px-4"
             >
-              <form onSubmit={handleSearch} className="glass rounded-2xl p-4 shadow-2xl">
+              <form
+                onSubmit={handleSearch}
+                className="glass rounded-2xl p-4 shadow-2xl"
+              >
                 <div className="flex items-center gap-3">
                   <FiSearch className="w-5 h-5 text-gray-400 flex-shrink-0" />
                   <input

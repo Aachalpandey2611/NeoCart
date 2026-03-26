@@ -1,9 +1,16 @@
-import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { FiGithub, FiTwitter, FiInstagram, FiLinkedin } from 'react-icons/fi';
+import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import { FiGithub, FiTwitter, FiInstagram, FiLinkedin } from "react-icons/fi";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const supportLinks = [
+    { label: "Help Center", to: "/products" },
+    { label: "Track Order", to: "/dashboard" },
+    { label: "Returns & Refunds", to: "/dashboard" },
+    { label: "Shipping Info", to: "/products" },
+    { label: "Contact Us", to: "/auth" },
+  ];
 
   return (
     <footer className="relative bg-black/80 border-t border-white/5 pt-16 pb-8 overflow-hidden z-10">
@@ -21,14 +28,15 @@ const Footer = () => {
               <span className="text-xl font-black text-white">NeoCart</span>
             </Link>
             <p className="text-gray-400 text-sm leading-relaxed mb-6">
-              Experience the future of shopping with our curated selection of next-generation technology, wearables, and AI-powered devices.
+              Experience the future of shopping with our curated selection of
+              next-generation technology, wearables, and AI-powered devices.
             </p>
             <div className="flex items-center gap-4">
               {[FiTwitter, FiGithub, FiInstagram, FiLinkedin].map((Icon, i) => (
                 <motion.a
                   key={i}
                   href="#"
-                  whileHover={{ y: -3, color: '#fff' }}
+                  whileHover={{ y: -3, color: "#fff" }}
                   className="w-10 h-10 rounded-full glass flex items-center justify-center text-gray-400 hover:bg-white/5 transition-colors"
                 >
                   <Icon className="w-5 h-5" />
@@ -41,9 +49,18 @@ const Footer = () => {
           <div>
             <h3 className="text-white font-semibold mb-6">Shop</h3>
             <ul className="space-y-4">
-              {['All Products', 'Electronics', 'Wearables', 'Gaming', 'Smart Home'].map((item) => (
+              {[
+                "All Products",
+                "Electronics",
+                "Wearables",
+                "Gaming",
+                "Smart Home",
+              ].map((item) => (
                 <li key={item}>
-                  <Link to="/products" className="text-gray-400 hover:text-purple-400 text-sm transition-colors">
+                  <Link
+                    to="/products"
+                    className="text-gray-400 hover:text-purple-400 text-sm transition-colors"
+                  >
                     {item}
                   </Link>
                 </li>
@@ -55,10 +72,13 @@ const Footer = () => {
           <div>
             <h3 className="text-white font-semibold mb-6">Support</h3>
             <ul className="space-y-4">
-              {['Help Center', 'Track Order', 'Returns & Refunds', 'Shipping Info', 'Contact Us'].map((item) => (
-                <li key={item}>
-                  <Link to="#" className="text-gray-400 hover:text-cyan-400 text-sm transition-colors">
-                    {item}
+              {supportLinks.map((item) => (
+                <li key={item.label}>
+                  <Link
+                    to={item.to}
+                    className="text-gray-400 hover:text-cyan-400 text-sm transition-colors"
+                  >
+                    {item.label}
                   </Link>
                 </li>
               ))}
@@ -91,9 +111,15 @@ const Footer = () => {
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between text-xs text-gray-500">
           <p>© {currentYear} NeoCart. All rights reserved.</p>
           <div className="flex items-center gap-6 mt-4 md:mt-0">
-            <Link to="#" className="hover:text-white transition-colors">Privacy Policy</Link>
-            <Link to="#" className="hover:text-white transition-colors">Terms of Service</Link>
-            <Link to="#" className="hover:text-white transition-colors">Cookie Policy</Link>
+            <Link to="#" className="hover:text-white transition-colors">
+              Privacy Policy
+            </Link>
+            <Link to="#" className="hover:text-white transition-colors">
+              Terms of Service
+            </Link>
+            <Link to="#" className="hover:text-white transition-colors">
+              Cookie Policy
+            </Link>
           </div>
         </div>
       </div>

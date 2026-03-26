@@ -1,13 +1,13 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const reviewSchema = new mongoose.Schema(
   {
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     name: { type: String, required: true },
     rating: { type: Number, required: true, min: 1, max: 5 },
     comment: { type: String, required: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const productSchema = new mongoose.Schema(
@@ -21,17 +21,27 @@ const productSchema = new mongoose.Schema(
     category: {
       type: String,
       required: true,
-      enum: ['Electronics', 'Wearables', 'Audio', 'Gaming', 'Accessories', 'Smart Home'],
+      enum: [
+        "Electronics",
+        "Smartphone",
+        "Smartphones",
+        "Laptops",
+        "Wearables",
+        "Audio",
+        "Gaming",
+        "Accessories",
+        "Smart Home",
+      ],
     },
-    brand: { type: String, default: '' },
+    brand: { type: String, default: "" },
     stock: { type: Number, required: true, default: 0 },
     reviews: [reviewSchema],
     rating: { type: Number, default: 0 },
     numReviews: { type: Number, default: 0 },
     featured: { type: Boolean, default: false },
-    badge: { type: String, default: '' }, // e.g. "NEW", "SALE", "HOT"
+    badge: { type: String, default: "" }, // e.g. "NEW", "SALE", "HOT"
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-module.exports = mongoose.model('Product', productSchema);
+module.exports = mongoose.model("Product", productSchema);
